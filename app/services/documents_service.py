@@ -6,10 +6,7 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_naver import ChatClovaX
 
 
-async def split_n_return_docs(text_file):
-    content = await text_file.read()
-    text = content.decode("utf-8")
-
+async def split_n_return_docs(text: str):
     document = Document(page_content=text)
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=1000, chunk_overlap=100
@@ -19,8 +16,8 @@ async def split_n_return_docs(text_file):
     return docs
 
 
-async def generate_summary(text_file):
-    docs = await split_n_return_docs(text_file)
+async def generate_summary(text: str):
+    docs = await split_n_return_docs(text)
 
     chat = ChatClovaX(model="HCX-005")
 

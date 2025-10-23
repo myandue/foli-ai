@@ -10,6 +10,7 @@ from app.services.quiz_service import (
     generate_quiz_by_keyword,
     generate_quiz_by_docs,
 )
+from app.services.documents_service import split_n_return_docs
 
 router = APIRouter(prefix="/quiz", tags=["quiz"])
 
@@ -30,9 +31,12 @@ def quiz_by_keyword(request: KeywordQuizRequest):
 
 
 @router.post("/documents", response_model=QuizResponse)
-def quiz_by_documents(request: DocsQuizRequest):
+async def quiz_by_documents(request: DocsQuizRequest):
     try:
-        quiz_data = generate_quiz_by_docs(*request)
+        docs = await split_n_return_docs(text=request.docs)
+        quiz_data = generate_quiz_by_docs(
+            docs=docs, amount=request.amount, level=request.level
+        )
         return QuizResponse(
             **(
                 quiz_data["generate_quiz"]

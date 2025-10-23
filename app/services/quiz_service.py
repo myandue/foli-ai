@@ -1,5 +1,6 @@
 import json
 
+from langchain_core.documents import Document
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnableMap
 from langchain_core.output_parsers import JsonOutputParser
@@ -8,7 +9,7 @@ from langchain_community.retrievers import WikipediaRetriever
 from langchain_naver import ChatClovaX
 
 
-def format_docs(docs):
+def format_docs(docs: list[Document]):
     return "\n\n".join(doc.page_content for doc in docs)
 
 
@@ -17,7 +18,7 @@ def search_wikipedia(topic: str):
     return retriever.invoke(topic)
 
 
-def generate_quiz_by_docs(docs: str, amount: int, level: str):
+def generate_quiz_by_docs(docs: list[Document], amount: int, level: str):
     chat = ChatClovaX(model="HCX-005")
 
     prompt = ChatPromptTemplate.from_messages(
