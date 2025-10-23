@@ -34,11 +34,11 @@ def generate_quiz_by_docs(docs: str, amount: int, level: str):
             {output_schema}
 
             오로지 주어진 문서의 내용만을 바탕으로 퀴즈를 만들어야해.
-            문서: {context}
+            문서: {content}
             문항 수: {num_questions}
             난이도: {difficulty_level}
 
-            출력은 반드시 **순수 JSON만** 포함해야 해.
+            출력은 반드시 **순수 JSON만** 포함해야 해. json 블록(```json)을 절대 씌우지 마.
             설명이나 추가 텍스트는 절대 포함하지 마.
             """,
             ),
@@ -49,8 +49,8 @@ def generate_quiz_by_docs(docs: str, amount: int, level: str):
         "name": "generate_quiz",
         "description": (
             """
-            function that takes a list of questions and answers and returns a quiz
-        """
+                questions 및 answers 리스트로 quiz를 만들어 반환하는 함수
+            """
         ),
         "parameters": {
             "type": "object",
@@ -97,11 +97,9 @@ def generate_quiz_by_docs(docs: str, amount: int, level: str):
         | JsonOutputParser()
     )
 
-    return json.loads(
-        chain.invoke({"docs": docs, "amount": amount, "level": level})
-    )
+    return chain.invoke({"docs": docs, "amount": amount, "level": level})
 
 
 def generate_quiz_by_keyword(keyword: str, amount: int, level: str):
-    docs = search_wikipedia(keyword)
+    docs = search_wikipedia(topic=keyword)
     return generate_quiz_by_docs(docs, amount, level)
