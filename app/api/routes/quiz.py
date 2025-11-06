@@ -27,6 +27,7 @@ def quiz_by_keyword(request: KeywordQuizRequest):
             )
         )
     except Exception as e:
+        print("error:", str(e))
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -45,4 +46,5 @@ async def quiz_by_documents(request: DocsQuizRequest):
             )
         )
     except Exception as e:
+        print(e)
         raise HTTPException(status_code=500, detail=str(e))

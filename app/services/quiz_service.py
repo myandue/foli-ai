@@ -31,13 +31,15 @@ def generate_quiz_by_docs(docs: list[Document], amount: int, level: str):
 
             각 퀴즈에는 **4개의 선택지**가 있어야 하며, 오직 하나의 선택지만이 정답이어야해.
 
-            JSON의 스키마는 다음과 같아:
+            JSON의 스키마는 다음과 같아. property의 타입과 구조를 반드시 지켜야 해.:
             {output_schema}
 
             오로지 주어진 문서의 내용만을 바탕으로 퀴즈를 만들어야해.
             문서: {content}
             문항 수: {num_questions}
             난이도: {difficulty_level}
+
+            문항 수를 절대적으로 지켜야 해.
 
             출력은 반드시 **순수 JSON만** 포함해야 해. json 블록(```json)을 절대 씌우지 마.
             설명이나 추가 텍스트는 절대 포함하지 마.

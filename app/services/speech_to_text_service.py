@@ -25,7 +25,6 @@ def speech_to_text(audio_file):
     print(response.json())
 
     return {
-        "status": response.status_code,
         "transcription": (
             response.json()["text"]
             if response.headers.get("Content-Type", "").startswith(

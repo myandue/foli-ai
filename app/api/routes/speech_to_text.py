@@ -12,4 +12,5 @@ async def transcription(audio_file: UploadFile = File(...)):
         transcription_data = speech_to_text(audio_file)
         return TranscriptionResponse(**transcription_data)
     except Exception as e:
+        print(e)
         raise HTTPException(status_code=500, detail=str(e))
