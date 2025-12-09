@@ -19,7 +19,7 @@ def search_wikipedia(topic: str):
 
 
 def generate_quiz_by_docs(docs: list[Document], amount: int, level: str):
-    chat = ChatClovaX(model="HCX-005")
+    chat = ChatClovaX(model="HCX-007")
 
     prompt = ChatPromptTemplate.from_messages(
         [
@@ -39,7 +39,7 @@ def generate_quiz_by_docs(docs: list[Document], amount: int, level: str):
             문항 수: {num_questions}
             난이도: {difficulty_level}
 
-            문항 수를 절대적으로 지켜야 해.
+            output 형태와 문항 수를 절대적으로 지켜야 해.
 
             출력은 반드시 **순수 JSON만** 포함해야 해. json 블록(```json)을 절대 씌우지 마.
             설명이나 추가 텍스트는 절대 포함하지 마.
@@ -49,39 +49,17 @@ def generate_quiz_by_docs(docs: list[Document], amount: int, level: str):
     )
 
     output_schema = {
-        "name": "generate_quiz",
-        "description": (
-            """
-                questions 및 answers 리스트로 quiz를 만들어 반환하는 함수
-            """
-        ),
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "questions": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "question": {"type": "string"},
-                            "answers": {
-                                "type": "array",
-                                "items": {
-                                    "type": "object",
-                                    "properties": {
-                                        "answer": {"type": "string"},
-                                        "correct": {"type": "boolean"},
-                                    },
-                                    "required": ["answer", "correct"],
-                                },
-                            },
-                        },
-                        "required": ["question", "answers"],
-                    },
-                }
-            },
-            "required": ["questions"],
-        },
+        "questions": [
+            {
+                "question": "string",
+                "answers": [
+                    {"answer": "string", "correct": "boolean"},
+                    {"answer": "string", "correct": "boolean"},
+                    {"answer": "string", "correct": "boolean"},
+                    {"answer": "string", "correct": "boolean"},
+                ],
+            }
+        ]
     }
 
     chain = (
