@@ -1,9 +1,22 @@
+import os
+from dotenv import load_dotenv
+
 from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_core.prompts import PromptTemplate
+from langchain_core.prompts import PromptTemplate, ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
+from langchain_core.runnables import RunnableLambda, RunnablePassthrough
+
+from langchain_classic.storage import LocalFileStore
+from langchain_classic.embeddings.cache import CacheBackedEmbeddings
+from langchain_community.vectorstores import FAISS
 
 from langchain_naver import ChatClovaX
+
+from app.core.embeddings.clova import ClovaEmbeddings
+
+load_dotenv()
+clova_api_key = os.getenv("CLOVASTUDIO_API_KEY")
 
 
 async def split_n_return_docs(text: str):
@@ -14,6 +27,26 @@ async def split_n_return_docs(text: str):
     docs = splitter.split_documents([document])
 
     return docs
+
+
+async def embedding_n_return_retriever(text: str):
+    cache_dir = "./.cache/embeddings"
+    local_embedding_store = LocalFileStore(cache_dir=cache_dir)
+
+    clova_embeddings = ClovaEmbeddings(
+        api_key=clova_api_key,
+        endpoint=(
+            "https://clovastudio.stream.ntruss.com/v1/api-tools/embedding/v2/"
+        ),
+    )
+    docs = await split_n_return_docs(text)
+
+    cached_embeddings = CacheBackedEmbeddings.from_bytes_store(
+        clova_embeddings, local_embedding_store
+    )
+    vectorstore = FAISS.from_documents(docs, cached_embeddings)
+
+    return vectorstore.as_retriever()
 
 
 async def generate_summary(text: str):
@@ -63,3 +96,43 @@ async def generate_summary(text: str):
     print("===final summary===")
     print(summary)
     return summary
+
+
+async def respond_to_question(question: str, text: str):
+    retriever = await embedding_n_return_retriever(text)
+
+    chat = ChatClovaX(model="HCX-005")
+
+    qna_prompt = ChatPromptTemplate.from_messages(
+        [
+            (
+                "system",
+                """
+                    너는 유능한 AI 비서야.
+                    너는 오로지 사용자가 제공한 문서들을 바탕으로 질문에 답변을 제공해야해.
+                    만약 문서에 답이 없다면 "해당 질문에 대한 내용은 존재하지 않습니다."라고 대답해줘.
+                    절대 임의로 내용을 생성하거나 추가하지 마.
+
+                    문서: 
+                    {context}
+
+                """,
+            ),
+            ("human", "{question}"),
+        ]
+    )
+
+    qna_chain = (
+        {
+            "context": retriever | RunnableLambda(text),
+            "question": RunnablePassthrough(),
+            # history can be added here in the future
+        }
+        | qna_prompt
+        | chat
+        | StrOutputParser()
+    )
+
+    answer = qna_chain.invoke(question)
+
+    return answer
