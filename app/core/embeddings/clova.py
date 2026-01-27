@@ -14,16 +14,18 @@ class ClovaEmbeddings(Embeddings):
             "Content-Type": "application/json",
         }
 
-        payload = {
-            "texts": texts,
-        }
+        payload = {"text": texts}
 
         res = requests.post(self.endpoint, headers=headers, json=payload)
         res.raise_for_status()
-        return res.json()["embeddings"]
+        return res.json()["result"]["embedding"]
 
     def embed_documents(self, texts):
-        return self._call_api(texts)
+        embeddings = []
+        for text in texts:
+            vector = self._call_api(text)
+            embeddings.append(vector)
+        return embeddings
 
-    def embed_query(self, text):
-        return self._call_api([text])[0]
+    def embed_query(self, texts):
+        return self._call_api(texts)

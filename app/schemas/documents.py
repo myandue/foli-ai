@@ -7,3 +7,12 @@ class SummaryRequest(BaseModel):
 
 class SummaryResponse(BaseModel):
     summary: str
+
+
+class QnARequest(BaseModel):
+    text: str
+    question: str
+
+
+class QnAResponse(BaseModel):
+    answer: str

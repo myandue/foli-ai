@@ -19,6 +19,10 @@ load_dotenv()
 clova_api_key = os.getenv("CLOVASTUDIO_API_KEY")
 
 
+def format_docs(docs):
+    return "\n\n".join([doc.page_content for doc in docs])
+
+
 async def split_n_return_docs(text: str):
     document = Document(page_content=text)
     splitter = RecursiveCharacterTextSplitter(
@@ -31,7 +35,7 @@ async def split_n_return_docs(text: str):
 
 async def embedding_n_return_retriever(text: str):
     cache_dir = "./.cache/embeddings"
-    local_embedding_store = LocalFileStore(cache_dir=cache_dir)
+    local_embedding_store = LocalFileStore(cache_dir)
 
     clova_embeddings = ClovaEmbeddings(
         api_key=clova_api_key,
@@ -44,7 +48,9 @@ async def embedding_n_return_retriever(text: str):
     cached_embeddings = CacheBackedEmbeddings.from_bytes_store(
         clova_embeddings, local_embedding_store
     )
-    vectorstore = FAISS.from_documents(docs, cached_embeddings)
+    vectorstore = FAISS.from_documents(
+        documents=docs, embedding=cached_embeddings
+    )
 
     return vectorstore.as_retriever()
 
@@ -124,7 +130,7 @@ async def respond_to_question(question: str, text: str):
 
     qna_chain = (
         {
-            "context": retriever | RunnableLambda(text),
+            "context": retriever | RunnableLambda(format_docs),
             "question": RunnablePassthrough(),
             # history can be added here in the future
         }
