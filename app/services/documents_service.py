@@ -104,8 +104,10 @@ async def generate_summary(text: str):
     return summary
 
 
-async def respond_to_question(question: str, text: str):
-    retriever = await embedding_n_return_retriever(text)
+async def respond_to_question(question: str, history: str, text: str):
+    retriever = await embedding_n_return_retriever(
+        text
+    )  # embed_documents가 호출됨. -> 로컬에 캐싱되므로 같은 문서가 들어올경우 해당 함수를 다시 호출하지 않음.
 
     chat = ChatClovaX(model="HCX-005")
 
@@ -122,6 +124,8 @@ async def respond_to_question(question: str, text: str):
                     문서: 
                     {context}
 
+                    이전 대화 내역:
+                    {history}
                 """,
             ),
             ("human", "{question}"),
@@ -130,15 +134,19 @@ async def respond_to_question(question: str, text: str):
 
     qna_chain = (
         {
-            "context": retriever | RunnableLambda(format_docs),
+            "context": (
+                RunnableLambda(lambda x: x["question"])
+                | retriever  # embed_query가 호출됨. question이 파라미터로 전달됨. -> 캐싱하고 있지 않기때문에 매번 임베딩 api 호출이 일어남.
+                | RunnableLambda(format_docs)
+            ),
             "question": RunnablePassthrough(),
-            # history can be added here in the future
+            "history": RunnablePassthrough(),
         }
         | qna_prompt
         | chat
         | StrOutputParser()
     )
 
-    answer = qna_chain.invoke(question)
+    answer = qna_chain.invoke({"question": question, "history": history})
 
     return answer

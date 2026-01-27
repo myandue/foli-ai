@@ -27,7 +27,9 @@ async def summarize_docs(request: SummaryRequest):
 async def qna(request: QnARequest):
     try:
         answer = await respond_to_question(
-            question=request.question, text=request.text
+            question=request.question,
+            history=request.history,
+            text=request.text,
         )
         return QnAResponse(answer=answer)
     except Exception as e:

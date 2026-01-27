@@ -11,6 +11,7 @@ class SummaryResponse(BaseModel):
 
 class QnARequest(BaseModel):
     text: str
+    history: list[str]
     question: str
 
 

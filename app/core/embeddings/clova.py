@@ -21,6 +21,7 @@ class ClovaEmbeddings(Embeddings):
         return res.json()["result"]["embedding"]
 
     def embed_documents(self, texts):
+        print("문서 임베딩 호출")
         embeddings = []
         for text in texts:
             vector = self._call_api(text)
@@ -28,4 +29,5 @@ class ClovaEmbeddings(Embeddings):
         return embeddings
 
     def embed_query(self, texts):
+        print("질문 임베딩 호출")
         return self._call_api(texts)
